@@ -1,0 +1,35 @@
+use serde::Serialize;
+use actix_cors::Cors;
+use actix_web::{web, App, HttpServer, Responder};
+
+#[derive(Serialize)]
+struct Task {
+    id: i32,
+    name: String,
+}
+
+async fn index() -> impl Responder {
+    "index"
+}
+
+async fn data() -> impl Responder {
+    web::Json(Task{ id: 1, name: "fixed data".to_string() })
+}
+
+async fn postgres() -> impl Responder {
+    web::Json(Task{ id: 2, name: "postgres data".to_string() })
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| {
+        App::new()
+            .wrap(Cors::permissive())
+            .route("/", web::get().to(index))
+            .route("/data", web::get().to(data))
+            .route("/postgres", web::get().to(postgres))
+    })
+        .bind(("127.0.0.1", 8080))?
+        .run()
+        .await
+}
