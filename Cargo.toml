@@ -6,7 +6,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = "1.0.130"
-actix-web = "3.3.2"
-actix-cors = "0.5.4"
-sqlx = { version = "0.5.9", features = [ "runtime-actix-rustls" ] }
+serde = { version = "1.0", features = ["derive"] }
+configuration = { package = "config", version = "0.11" }
+actix-web = "3.3"
+actix-cors = "0.5"
+sqlx = { version = "0.5", features = ["runtime-actix-rustls"] }
+
