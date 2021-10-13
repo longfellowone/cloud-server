@@ -20,6 +20,10 @@ async fn postgres() -> impl Responder {
     web::Json(Task{ id: 2, name: "postgres data".to_string() })
 }
 
+async fn search() -> impl Responder {
+    web::Json(Task{ id: 3, name: "search data".to_string() })
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
@@ -28,6 +32,7 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(index))
             .route("/data", web::get().to(data))
             .route("/postgres", web::get().to(postgres))
+            .route("/search", web::get().to(search))
     })
         .bind(("127.0.0.1", 8080))?
         .run()
