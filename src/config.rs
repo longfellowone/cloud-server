@@ -5,11 +5,11 @@ use serde::Deserialize;
 pub struct AppConfig {
     pub host: String,
     pub port: u16,
-    // sql: SQLConfig,
+    pub database: PostgresConfig,
 }
 
 impl AppConfig {
-    pub fn new() -> Result<AppConfig, ConfigError> {
+    pub fn new() -> Result<Self, ConfigError> {
         let mut c = Config::default();
 
         c.merge(File::with_name("config")).unwrap();
@@ -17,13 +17,26 @@ impl AppConfig {
 
         c.try_into()
     }
+
+    pub fn addr(&self) -> (&str, u16) {
+        (&self.host, self.port)
+    }
 }
 
-// #[derive(Debug, Serialize)]
-// pub struct SQLConfig {
-//     pub host: String,
-//     pub port: u16,
-//     pub username: String,
-//     pub password: String,
-//     pub database: String,
-// }
+#[derive(Debug, Deserialize)]
+pub struct PostgresConfig {
+    pub host: String,
+    pub port: u16,
+    pub username: String,
+    pub password: String,
+    pub database: String,
+}
+
+impl PostgresConfig {
+    pub fn connection_string(&self) -> String {
+        format!(
+            "postgres://{}:{}@{}:{}/{}",
+            self.username, self.password, self.host, self.port, self.database
+        )
+    }
+}
