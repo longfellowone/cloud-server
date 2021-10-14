@@ -2,8 +2,48 @@ mod config;
 
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer, Responder};
+use anyhow::Result;
 use config::AppConfig;
 use serde::{Deserialize, Serialize};
+use sqlx::PgPool;
+
+#[actix_web::main]
+async fn main() -> Result<()> {
+    let config = AppConfig::new().unwrap();
+
+    let db = PgPool::connect(&config.database.connection_string()).await?;
+    let db = web::Data::new(db);
+
+    HttpServer::new(move || {
+        App::new()
+            .wrap(Cors::permissive())
+            .app_data(db.clone())
+            .configure(routes)
+    })
+    .bind(config.addr())?
+    .run()
+    .await?;
+
+    Ok(())
+}
+
+fn routes(cfg: &mut web::ServiceConfig) {
+    cfg.service(
+        web::scope("/v1")
+            .service(web::scope("/data").route("", web::get().to(data)))
+            .service(
+                web::scope("/postgres")
+                    .service(
+                        web::resource("")
+                            .route(web::get().to(postgres::list))
+                            .route(web::post().to(postgres::post)),
+                    )
+                    .service(web::resource("/{id}").route(web::get().to(postgres::get))),
+            )
+            .service(web::scope("/search").service(web::resource("").route(web::get().to(search)))),
+    )
+    .route("/", web::get().to(index));
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Task {
@@ -25,8 +65,11 @@ async fn data() -> impl Responder {
 mod postgres {
     use super::Task;
     use actix_web::{web, HttpResponse, Responder};
+    use sqlx::PgPool;
 
-    pub async fn list() -> impl Responder {
+    pub async fn list(db: web::Data<PgPool>) -> impl Responder {
+        let _db = db.get_ref();
+
         let task1 = Task {
             id: 3,
             name: "list postgres data".to_string(),
@@ -41,8 +84,8 @@ mod postgres {
         web::Json(tasks)
     }
 
-    pub async fn get(task: web::Path<u32>) -> impl Responder {
-        println!("got task_id: {:?}", task);
+    pub async fn get(id: web::Path<u32>) -> impl Responder {
+        println!("got id: {:?}", id);
         web::Json(Task {
             id: 2,
             name: "get postgres data".to_string(),
@@ -60,39 +103,4 @@ async fn search() -> impl Responder {
         id: 5,
         name: "search data".to_string(),
     })
-}
-
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    let config = AppConfig::new().unwrap();
-
-    println!("{:?}", config.database.connection_string());
-
-    HttpServer::new(|| {
-        App::new()
-            .wrap(Cors::permissive())
-            .service(
-                web::scope("/v1")
-                    .service(web::scope("/data").route("", web::get().to(data)))
-                    .service(
-                        web::scope("/postgres")
-                            .service(
-                                web::resource("")
-                                    .route(web::get().to(postgres::list))
-                                    .route(web::post().to(postgres::post)),
-                            )
-                            .service(
-                                web::resource("/{task_id}").route(web::get().to(postgres::get)),
-                            ),
-                    )
-                    .service(
-                        web::scope("/search")
-                            .service(web::resource("").route(web::get().to(search))),
-                    ),
-            )
-            .route("/", web::get().to(index))
-    })
-    .bind(config.addr())?
-    .run()
-    .await
 }

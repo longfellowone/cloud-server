@@ -3,8 +3,8 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct AppConfig {
-    pub host: String,
-    pub port: u16,
+    host: String,
+    port: u16,
     pub database: PostgresConfig,
 }
 
@@ -25,11 +25,11 @@ impl AppConfig {
 
 #[derive(Debug, Deserialize)]
 pub struct PostgresConfig {
-    pub host: String,
-    pub port: u16,
-    pub username: String,
-    pub password: String,
-    pub database: String,
+    host: String,
+    port: u16,
+    username: String,
+    password: String,
+    database: String,
 }
 
 impl PostgresConfig {
