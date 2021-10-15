@@ -369,6 +369,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "config",
+ "derive_more",
  "serde 1.0.130",
  "sqlx",
  "uuid",

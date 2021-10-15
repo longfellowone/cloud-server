@@ -1,17 +1,22 @@
-mod config;
+mod configuration;
 
 use actix_cors::Cors;
-use actix_web::{web, App, HttpServer, Responder};
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use anyhow::Result;
-use config::AppConfig;
+use configuration::Configuration;
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
+use sqlx::FromRow;
+use std::fmt::Debug;
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    let config = AppConfig::new().unwrap();
+    let config = Configuration::new()?;
 
-    let db = PgPool::connect(&config.database.connection_string()).await?;
+    let db = PgPoolOptions::new()
+        .connect_timeout(std::time::Duration::from_secs(2))
+        .connect(&config.database.connection_string())
+        .await?;
     let db = web::Data::new(db);
 
     HttpServer::new(move || {
@@ -20,7 +25,7 @@ async fn main() -> Result<()> {
             .app_data(db.clone())
             .configure(routes)
     })
-    .bind(config.addr())?
+    .bind(config.server.addr())?
     .run()
     .await?;
 
@@ -41,24 +46,19 @@ fn routes(cfg: &mut web::ServiceConfig) {
                     .service(web::resource("/{id}").route(web::get().to(postgres::get))),
             )
             .service(web::scope("/search").service(web::resource("").route(web::get().to(search)))),
-    )
-    .route("/", web::get().to(index));
+    );
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Task {
     id: i32,
     name: String,
 }
 
-async fn index() -> impl Responder {
-    "index"
-}
-
 async fn data() -> impl Responder {
-    web::Json(Task {
+    HttpResponse::Ok().json(Task {
         id: 1,
-        name: "fixed data".to_string(),
+        name: "data".to_string(),
     })
 }
 
@@ -68,38 +68,41 @@ mod postgres {
     use sqlx::PgPool;
 
     pub async fn list(db: web::Data<PgPool>) -> impl Responder {
-        let _db = db.get_ref();
+        let result = sqlx::query_as::<_, Task>(
+            r#"
+                SELECT id, name
+                FROM tasks
+            "#,
+        )
+        .fetch_all(db.as_ref())
+        .await;
 
-        let task1 = Task {
-            id: 3,
-            name: "list postgres data".to_string(),
-        };
-        let task2 = Task {
-            id: 4,
-            name: "list postgres data".to_string(),
-        };
-
-        let tasks = vec![task1, task2];
-
-        web::Json(tasks)
+        match result {
+            Ok(tasks) => HttpResponse::Ok().json(tasks),
+            Err(_) => HttpResponse::NotFound().body("no records found"),
+        }
     }
 
     pub async fn get(id: web::Path<u32>) -> impl Responder {
         println!("got id: {:?}", id);
-        web::Json(Task {
+
+        HttpResponse::Ok().json(Task {
             id: 2,
             name: "get postgres data".to_string(),
         })
     }
 
     pub async fn post(task: web::Json<Task>) -> impl Responder {
-        println!("got task: {:?}", task.into_inner());
-        HttpResponse::Created()
+        let task = &task.into_inner();
+
+        println!("got task: {:?}", task);
+
+        HttpResponse::Created().json(task)
     }
 }
 
 async fn search() -> impl Responder {
-    web::Json(Task {
+    HttpResponse::Ok().json(Task {
         id: 5,
         name: "search data".to_string(),
     })
