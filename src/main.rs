@@ -51,7 +51,7 @@ fn routes(cfg: &mut web::ServiceConfig) {
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Task {
-    id: i32,
+    pub id: i32,
     name: String,
 }
 
@@ -68,23 +68,18 @@ mod postgres {
     use sqlx::PgPool;
 
     pub async fn list(db: web::Data<PgPool>) -> impl Responder {
-        let result = sqlx::query_as::<_, Task>(
-            r#"
-                SELECT id, name
-                FROM tasks
-            "#,
-        )
-        .fetch_all(db.as_ref())
-        .await;
+        let result = sqlx::query_as!(Task, "SELECT id, name FROM tasks")
+            .fetch_all(db.as_ref())
+            .await;
 
         match result {
             Ok(tasks) => HttpResponse::Ok().json(tasks),
-            Err(_) => HttpResponse::NotFound().body("no records found"),
+            Err(err) => HttpResponse::NotFound().body(err.to_string()),
         }
     }
 
     pub async fn get(id: web::Path<u32>) -> impl Responder {
-        println!("got id: {:?}", id);
+        println!("got id: {:?}", id.into_inner());
 
         HttpResponse::Ok().json(Task {
             id: 2,
@@ -93,7 +88,7 @@ mod postgres {
     }
 
     pub async fn post(task: web::Json<Task>) -> impl Responder {
-        let task = &task.into_inner();
+        let task = task.into_inner();
 
         println!("got task: {:?}", task);
 

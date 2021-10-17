@@ -3,8 +3,8 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct Configuration {
-    pub server: ServerConfiguration,
-    pub database: PostgresConfiguration,
+    pub server: Server,
+    pub database: Postgres,
 }
 
 impl Configuration {
@@ -19,19 +19,19 @@ impl Configuration {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct ServerConfiguration {
+pub struct Server {
     host: String,
     port: u16,
 }
 
-impl ServerConfiguration {
+impl Server {
     pub fn addr(&self) -> (&str, u16) {
         (&self.host, self.port)
     }
 }
 
 #[derive(Debug, Deserialize)]
-pub struct PostgresConfiguration {
+pub struct Postgres {
     host: String,
     port: u16,
     username: String,
@@ -39,8 +39,8 @@ pub struct PostgresConfiguration {
     database: String,
 }
 
-impl PostgresConfiguration {
-    pub fn connection_string(self) -> String {
+impl Postgres {
+    pub fn connection_string(&self) -> String {
         format!(
             "postgres://{}:{}@{}:{}/{}",
             self.username, self.password, self.host, self.port, self.database
