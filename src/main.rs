@@ -51,7 +51,7 @@ fn routes(cfg: &mut web::ServiceConfig) {
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Task {
-    pub id: i32,
+    id: i32,
     name: String,
 }
 
@@ -72,6 +72,8 @@ mod postgres {
             .fetch_all(db.as_ref())
             .await;
 
+        println!("list hit");
+
         match result {
             Ok(tasks) => HttpResponse::Ok().json(tasks),
             Err(err) => HttpResponse::NotFound().body(err.to_string()),
@@ -87,7 +89,7 @@ mod postgres {
         })
     }
 
-    pub async fn post(task: web::Json<Task>) -> impl Responder {
+    pub async fn post(task: web::Form<Task>) -> impl Responder {
         let task = task.into_inner();
 
         println!("got task: {:?}", task);
