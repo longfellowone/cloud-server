@@ -5,7 +5,7 @@ use sqlx::postgres::{PgConnectOptions, PgSslMode};
 #[derive(Debug, Deserialize)]
 pub struct Configuration {
     pub server: Server,
-    pub database: Postgres,
+    pub postgres: Postgres,
 }
 
 impl Configuration {

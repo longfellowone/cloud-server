@@ -15,7 +15,7 @@ async fn main() -> Result<()> {
 
     let db = PgPoolOptions::new()
         .connect_timeout(std::time::Duration::from_secs(2))
-        .connect_with(config.database.options())
+        .connect_with(config.postgres.options())
         .await?;
 
     let db = web::Data::new(db);
