@@ -13,6 +13,7 @@ RUN set -x\
 
 COPY src src
 COPY sqlx-data.json .
+COPY Config.toml .
 ENV SQLX_OFFLINE true
 RUN set -x\
  && find target/release/ -type f -executable -maxdepth 1 -delete\
