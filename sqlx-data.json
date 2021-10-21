@@ -1,0 +1,27 @@
+{
+  "db": "PostgreSQL",
+  "0ccf84b212074bac9024cab256af2b818d2a30059a3d600b17bbc7f64d844774": {
+    "query": "SELECT id, name FROM tasks",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": []
+      },
+      "nullable": [
+        false,
+        false
+      ]
+    }
+  }
+}

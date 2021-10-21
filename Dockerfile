@@ -12,6 +12,7 @@ RUN set -x\
  && cargo build --release
 
 COPY src src
+ENV SQLX_OFFLINE true
 RUN set -x\
  && find target/release/ -type f -executable -maxdepth 1 -delete\
  && cargo build --release
