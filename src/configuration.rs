@@ -33,11 +33,11 @@ impl Server {
 
 #[derive(Debug, Deserialize)]
 pub struct Postgres {
-    host: String,
-    port: u16,
-    username: String,
-    password: String,
-    database: String,
+    pghost: String,
+    pgport: u16,
+    pguser: String,
+    pgpassword: String,
+    pgdatabase: String,
     require_ssl: bool,
 }
 
@@ -49,11 +49,11 @@ impl Postgres {
             PgSslMode::Prefer
         };
         PgConnectOptions::new()
-            .username(&self.username)
-            .password(&self.password)
-            .host(&self.host)
-            .port(self.port)
-            .database(&self.database)
+            .username(&self.pguser)
+            .password(&self.pgpassword)
+            .host(&self.pghost)
+            .port(self.pgport)
+            .database(&self.pgdatabase)
             .ssl_mode(ssl_mode)
     }
 }
