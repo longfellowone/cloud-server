@@ -13,8 +13,11 @@ use std::fmt::Debug;
 async fn main() -> Result<()> {
     let config = Configuration::new()?;
 
+    println!("{:#?}", config);
+    println!("{:#?}", &config.postgres.options());
+
     let db = PgPoolOptions::new()
-        .connect_timeout(std::time::Duration::from_secs(2))
+        .connect_timeout(std::time::Duration::from_secs(10))
         .connect_with(config.postgres.options())
         .await?;
 
