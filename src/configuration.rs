@@ -38,12 +38,12 @@ pub struct Postgres {
     user: String,
     password: String,
     database: String,
-    require_ssl: bool,
+    sslmode: bool,
 }
 
 impl Postgres {
     pub fn options(&self) -> PgConnectOptions {
-        let ssl_mode = if self.require_ssl {
+        let ssl_mode = if self.sslmode {
             PgSslMode::Require
         } else {
             PgSslMode::Prefer
