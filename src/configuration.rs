@@ -13,7 +13,7 @@ impl Configuration {
         let mut c = Config::default();
 
         c.merge(File::with_name("Config")).unwrap();
-        c.merge(Environment::new()).unwrap();
+        c.merge(Environment::new().separator("_")).unwrap();
 
         c.try_into()
     }
@@ -33,11 +33,11 @@ impl Server {
 
 #[derive(Debug, Deserialize)]
 pub struct Postgres {
-    pghost: String,
-    pgport: u16,
-    pguser: String,
-    pgpassword: String,
-    pgdatabase: String,
+    host: String,
+    port: u16,
+    user: String,
+    password: String,
+    database: String,
     require_ssl: bool,
 }
 
@@ -49,11 +49,11 @@ impl Postgres {
             PgSslMode::Prefer
         };
         PgConnectOptions::new()
-            .username(&self.pguser)
-            .password(&self.pgpassword)
-            .host(&self.pghost)
-            .port(self.pgport)
-            .database(&self.pgdatabase)
+            .username(&self.user)
+            .password(&self.password)
+            .host(&self.host)
+            .port(self.port)
+            .database(&self.database)
             .ssl_mode(ssl_mode)
     }
 }

@@ -3,9 +3,9 @@ host = "0.0.0.0"
 port = 8080
 
 [postgres]
-pghost = "localhost"
-pgport = 5432
-pguser = "postgres"
-pgpassword = "postgres"
-pgdatabase = "test"
+host = "localhost"
+port = 5432
+user = "postgres"
+password = "postgres"
+database = "test"
 require_ssl = "false"
