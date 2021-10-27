@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::FromRow;
 use std::fmt::Debug;
+use uuid::Uuid;
 
 #[actix_web::main]
 async fn main() -> Result<()> {
@@ -52,13 +53,13 @@ fn routes(cfg: &mut web::ServiceConfig) {
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Task {
-    id: i32,
+    id: Uuid,
     name: String,
 }
 
 async fn data() -> impl Responder {
     HttpResponse::Ok().json(Task {
-        id: 1,
+        id: Uuid::new_v4(),
         name: "data".to_string(),
     })
 }
@@ -67,6 +68,7 @@ mod postgres {
     use super::Task;
     use actix_web::{web, HttpResponse, Responder};
     use sqlx::PgPool;
+    use uuid::Uuid;
 
     pub async fn list(db: web::Data<PgPool>) -> impl Responder {
         let result = sqlx::query_as!(Task, "SELECT id, name FROM tasks")
@@ -85,7 +87,7 @@ mod postgres {
         println!("got id: {:?}", id.into_inner());
 
         HttpResponse::Ok().json(Task {
-            id: 2,
+            id: Uuid::new_v4(),
             name: "get postgres data".to_string(),
         })
     }
@@ -101,7 +103,7 @@ mod postgres {
 
 async fn search() -> impl Responder {
     HttpResponse::Ok().json(Task {
-        id: 5,
+        id: Uuid::new_v4(),
         name: "search data".to_string(),
     })
 }
